@@ -84,11 +84,7 @@ Os resultados indicaram que, embora todas as arquiteturas funcionem de forma sat
 
 Embora os testes realizados tenham demonstrado que todas as arquiteturas podem fornecer respostas satisfatórias para consultas simples, investigações futuras poderão expandir os cenários para casos com maior complexidade, onde as vantagens do Agentic RAG serão mais evidentes, como em consultas com múltiplas fontes de informação e interações de alta complexidade.
 
-## Contribuições
-
-Sinta-se à vontade para contribuir com melhorias e adaptações. Comentários, sugestões e pull requests são muito bem-vindos!
-
 ## Contato
 
 Para mais informações ou dúvidas, entre em contato:  
-[Gabriel Menezes Cabral] – [bielmenezesc@gmail.com] – [Link para meu perfil no GitHub](https://github.com/bielmenezesc)
+Gabriel Menezes Cabral – bielmenezesc@gmail.com – [Meu Linkedin](https://www.linkedin.com/in/gabrielmenezesc/)
