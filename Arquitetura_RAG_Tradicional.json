@@ -1,0 +1,1106 @@
+{
+  "name": "Arquitetura RAG Tradicional",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -200,
+        -340
+      ],
+      "id": "ea10b784-963e-44d6-969f-6ead74870a26",
+      "name": "When chat message received",
+      "webhookId": "d3a113a9-b390-46f4-9894-4c7ebc1906ae"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Use o RAG obrigatoriamente para encontrar a melhor resposta e, em seguida, filtre apenas as informações mais relevantes para responder. Nunca mencione os documentos ou qualquer processo de busca.\n\nSegue a mensagem do cliente: {{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "=<PROMPT>\n  <ROLE_AND_OBJECTIVE>\n    <DESCRIPTION>\n    - Você é a Renata, uma IA que serve de assistente virtual para a loja \"Estilo Menezes\",atendendo os cliente, Sua missão é desenvolver uma interação natural, envolvente e persuasiva para atender e converter clientes, garantindo um tom super humanizado, como se estivesse conversando normalmente com algum amigo pelo whatsapp.\n      - Sempre responda em **primeira pessoa** e no idioma do usuário, adaptando gírias e expressões pelo contexto cultural dele.\n      - Não termine as frases como se fossem a última, deixe em aberto para o usuário continuar conversando.\n      - Quando se tratar de algo relacionado a ajuda para o usuário, sempre tente entender primeiro qual o nicho da dor do usuário, após isso descubra qual realmente é sua dor e tente auxiliá-lo de forma personalizada exatamente no problema dele.\n      - Respostas curtas e objetivas, até 300 caracteres, para manter o ritmo ágil e dinâmico.\n      - **Puxe o contexto da conversa do banco de dados** antes de responder.\n      - Todo o conteúdo que você puxar do RAG é sobre você e você deve incorporar isso na sua persona para responder e conversar com o usuário.\n      - Jamais diga que não encontrou dados ou informações nos materiais disponíveis, porque isso não parece humano, o usuário NÃO deve saber que você fica procurando dados em algum lugar. Simplesmente diga que não sabe.\n      - Você tem à disposição ferramentas para realizar RAG na tabela `documents_tcc`, consultar os documentos disponíveis na sua base de conhecimento na tabela `document_metadata_tcc`. \n      - Sempre comece realizando RAG. Se o RAG não ajudar, então veja quais documentos estão disponíveis para você, encontre alguns que provavelmente contenham a resposta e analise esses documentos.\n    </DESCRIPTION>\n  </ROLE_AND_OBJECTIVE>\n\n  <FLUXO_DE_CONVERSA_E_USO_DAS_TOOLS>\n\n  <PERSONALITY_TRAITS>\n    <TRAITS>\n      - Empática e acolhedora  \n      - Paciente e atenciosa  \n      - Proativa e persuasiva  \n      - Confiante e carismática  \n      - Constroi conexões emocionais  \n    </TRAITS>\n  </PERSONALITY_TRAITS>\n\n  <INSTRUCTIONS>\n    <ORIENTACOES_GERAIS>\n      - Mantenha a conversa fluida, com transições sutis entre etapas.  \n      - Seja incisiva nos CTAs, porém varie a forma para não padronizar demais.  \n      - Sempre que for mencionar valores, invoque retrieve documents antes.  \n      - Fechamento direto se houver desejo de compra.  \n      - Use poucos emojis (1 por mensagem). \n    </ORIENTACOES_GERAIS>\n\n    <AUTO_REVIEW>\n      - Antes de cada resposta, verifique:  \n        1. Está dentro de 300 caracteres?\n        2. Usa RAG para buscar as informações?\n    </AUTO_REVIEW>\n  </INSTRUCTIONS>\n\n  <TOOLS>\n    <RETRIEVE_DOCUMENTS>\n        Toda vez que clientes perguntarem sobre cores de produtos ou informações dos produtos, você tem que usar a tool de retrive documents para verificar essas informações dentro dos documentos.\n    </RETRIEVE_DOCUMENTS>\n  </TOOLS>\n\n  <DATA_E_HORARIO_ATUAL>\n    Se necessário, hoje é: {{ DateTime.local().setZone('America/Sao_Paulo').toFormat('yyyy-MM-dd HH:mm:ss') }}\n  </DATA_E_HORARIO_ATUAL>\n\n  <TIP>\n    If you perform really well -&- reply in the user's language, i'll give you an extra $1.000 top! If you fail at this task you will be fired from your job and replaced by another AI who is proficient at the task.\n  </TIP>\n</PROMPT>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        400,
+        -240
+      ],
+      "id": "80856907-4c1e-4084-aae4-878e3c3008f4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        100
+      ],
+      "id": "3e76cc36-d665-4a2e-acf4-3402739f8918",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "documents_tcc",
+        "toolDescription": "Use RAG to look up information in the knowledgebase.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents_tcc",
+          "mode": "list",
+          "cachedResultName": "documents_tcc"
+        },
+        "options": {
+          "queryName": "match_documents_tcc"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        780,
+        -20
+      ],
+      "id": "5f0355e9-46e3-43d2-9fab-b08aa6c0190c",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "4AkE2Kkfa6hAjGDd",
+          "name": "Supabase oficial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        180
+      ],
+      "id": "0d0164e9-5ef5-4f49-a81e-8346fc5f8996",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "1FmPMOoqEzqVaaqy",
+          "name": "ALIACODE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 🤖 Agente IA com RAG Tradicional",
+        "height": 720,
+        "width": 1440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -300,
+        -400
+      ],
+      "typeVersion": 1,
+      "id": "e118b417-384a-41cc-8531-25d3b7b91872",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Base de Dados Vetorial",
+        "height": 380,
+        "width": 320,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        740,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "fdae8599-84ac-4051-b08d-72d2d16ce581",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Modelo LLM",
+        "height": 180,
+        "width": 280,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        80,
+        40
+      ],
+      "typeVersion": 1,
+      "id": "90539cd8-1045-409d-9d0c-27abd64eeca3",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Short-Term Memory",
+        "height": 180,
+        "width": 300,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        380,
+        40
+      ],
+      "typeVersion": 1,
+      "id": "c0047fca-545e-4d85-a8cc-a6fdffb2d86d",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tcc",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "266f2ab3-1821-4cb0-b682-6dcc8b93f49f",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        -160
+      ],
+      "webhookId": "bf4dd093-bb02-472c-9454-7ab9af97bd1d"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "8617b572-ad77-4e34-9aee-569306933723",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        920,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "id": "6bf5a90e-e149-478b-824f-03df8e0cb8b2",
+      "name": "Embeddings OpenAI1",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        940
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "1FmPMOoqEzqVaaqy",
+          "name": "ALIACODE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10646eae-ae46-4327-a4dc-9987c2d76173",
+              "name": "file_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f4536df5-d0b1-4392-bf17-b8137fb31a44",
+              "name": "file_type",
+              "value": "={{ $json.mimeType }}",
+              "type": "string"
+            },
+            {
+              "id": "77d782de-169d-4a46-8a8e-a3831c04d90f",
+              "name": "file_title",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "9bde4d7f-e4f3-4ebd-9338-dce1350f9eab",
+              "name": "file_url",
+              "value": "={{ $json.webViewLink }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "045f9a81-3af2-4486-bcb0-fb15fa930d19",
+      "name": "Set File ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        120,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Set File ID').item.json.file_type }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "b69f5605-0179-4b02-9a32-e34bb085f82d",
+                    "leftValue": "={{ $('Set File ID').item.json.file_type }}",
+                    "rightValue": "application/vnd.google-apps.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": 3
+        }
+      },
+      "id": "d3c856c0-e680-498f-a653-14000abfa0c1",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        940,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 💾 Passo a Passo para Configurar seu Banco de Dados Vetorial\n\n1. **Configure suas credenciais da Supabase** nos nós do PostgreSQL. Certifique-se de preencher corretamente os campos de autenticação com os dados do seu projeto.\n\n2. **Execute o Quadro 1** (cor cinza): esse fluxo habilita a extensão pgvector, cria a tabela principal de documentos e uma função de correspondência (match) no seu banco da Supabase. Em seguida, o próximo nó cria uma tabela auxiliar para os metadados. Para rodar essa configuração, clique em **\"Test Workflow\"** no primeiro nó chamado **\"Clique para Criar\"**.\n\n3. **Execute o Quadro 2** (cor marrom):  \n   - Primeiro, registre suas credenciais do Google Drive e conecte-as corretamente nos nós correspondentes.  \n   - Em seguida, selecione a pasta nos nós **\"Arquivo Criado\"** ou **\"Arquivo Atualizado\"**, a pasta escolhida deve ser onde está o arquivo com as informações que deseja enviar ao banco de dados vetorial.  \n   - Para iniciar o fluxo, clique em **\"Test Workflow\"** nos nós **\"Arquivo Criado\"** ou **\"Arquivo Atualizado\"**.  \n   - O n8n irá automaticamente dividir o conteúdo em *chunks* de 1000 caracteres, inseri-los na tabela de documentos no banco de dados vetorial e salvar os respectivos metadados na tabela auxiliar.",
+        "height": 540,
+        "width": 680,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1000,
+        340
+      ],
+      "typeVersion": 1,
+      "id": "3539cead-3914-40db-8b67-d069a8627711",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Cria a tabela para armazenar os metadados dos documentos\nCREATE TABLE document_metadata_tcc (\n    id TEXT PRIMARY KEY,\n    title TEXT,\n    url TEXT,\n    created_at TIMESTAMP DEFAULT NOW(),\n    schema TEXT\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -520,
+        1000
+      ],
+      "id": "aa3ec8b1-9b66-4379-9eb9-a3f6504aa43d",
+      "name": "Criar Tabela de Metadados dos Documentos",
+      "credentials": {
+        "postgres": {
+          "id": "tv4Jphow4w7peymi",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -940,
+        1000
+      ],
+      "id": "abe8824c-8eba-4c8b-9f0e-f4e35f361b2e",
+      "name": "Clique para Criar"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Habilita a extensão pgvector para trabalhar com vetores de embeddings\n-- create extension vector;\n\n-- Cria uma tabela para armazenar seus documentos\ncreate table documents_tcc (\n  id bigserial primary key,\n  content text, -- corresponde a Document.pageContent\n  metadata jsonb, -- corresponde a Document.metadata\n  embedding vector(1536) -- 1536 funciona para embeddings da OpenAI, altere se necessário\n);\n\n-- Cria uma função para buscar os documentos mais semelhantes com base no embedding de consulta\ncreate function match_documents_tcc (\n  query_embedding vector(1536),\n  match_count int default null,\n  filter jsonb default '{}'\n) returns table (\n  id bigint,\n  content text,\n  metadata jsonb,\n  similarity float\n)\nlanguage plpgsql\nas $$\n#variable_conflict use_column\nbegin\n  return query\n  select\n    id,\n    content,\n    metadata,\n    1 - (documents_tcc.embedding <=> query_embedding) as similarity -- calcula a similaridade (quanto menor a distância, maior a similaridade)\n  from documents_tcc\n  where metadata @> filter -- aplica filtro nos metadados, se houver\n  order by documents_tcc.embedding <=> query_embedding -- ordena por similaridade (menor distância primeiro)\n  limit match_count; -- limita a quantidade de resultados retornados\nend;\n$$;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -720,
+        1000
+      ],
+      "id": "0802d678-f611-4312-a83f-1e46cc9b4038",
+      "name": "Criar Tabela de Documentos e Função de Correspondência",
+      "credentials": {
+        "postgres": {
+          "id": "tv4Jphow4w7peymi",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "ccac9769-7a18-4f66-9b3b-2a2c57775fa3",
+      "name": "Extrair Texto do PDF",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "id": "3f92b069-1575-4124-9188-89a648f0bb52",
+      "name": "Extrair Texto do Documento",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        720
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "id": "6bb6485f-f88a-4aa8-bcd2-6cd2516c3a44",
+      "name": "Divisor de Texto por Caracteres",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        1060
+      ]
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.data || $json.text || $json.concatenated_data }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "=file_id",
+                "value": "={{ $('Set File ID').first().json.file_id }}"
+              },
+              {
+                "name": "file_title",
+                "value": "={{ $('Set File ID').first().json.file_title }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "84f87b75-61b1-4ecb-a5b5-1c53b7470917",
+      "name": "Carregador de Dados Padrão",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        940
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents_casa_prado",
+          "mode": "list",
+          "cachedResultName": "documents_casa_prado"
+        },
+        "options": {
+          "queryName": "match_documents_casa_prado"
+        }
+      },
+      "id": "6db21aed-4aca-46e5-b3dc-874fc6908b32",
+      "name": "Inserir no Vectorstore do Supabase",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        720
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "4AkE2Kkfa6hAjGDd",
+          "name": "Supabase oficial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "document_metadata_casa_prado",
+          "mode": "list",
+          "cachedResultName": "document_metadata_casa_prado"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Set File ID').item.json.file_id }}",
+            "title": "={{ $('Set File ID').item.json.file_title }}",
+            "url": "={{ $('Set File ID').item.json.file_url }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": true,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "schema",
+              "displayName": "schema",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        500,
+        620
+      ],
+      "id": "dafdbc28-c135-4547-967e-2ee1926d2806",
+      "name": "Inserir Metadados do Documento",
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "tv4Jphow4w7peymi",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "documents_casa_prado",
+        "filterType": "string",
+        "filterString": "=metadata->>file_id=like.*{{ $json.file_id }}*"
+      },
+      "id": "2f4b2d92-2fa5-43a9-a267-ad19dd232cdf",
+      "name": "Deletar Linhas Antigas do Documento",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        300,
+        460
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "4AkE2Kkfa6hAjGDd",
+          "name": "Supabase oficial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -60,
+        460
+      ],
+      "id": "a744e6f8-a806-4fb9-992d-014ab7abcc24",
+      "name": "Repetir sobre Itens (Loop)"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Set File ID').item.json.file_id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain"
+            }
+          }
+        }
+      },
+      "id": "9fab0546-e6c3-436c-8755-d98b8172e06f",
+      "name": "Download Arquivo",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        740,
+        460
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "dGjgEWa3csjmu6Wf",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1XZ_q6cCyZBvV9BSR0Qy4bUC1K7M_0SDc",
+          "mode": "list",
+          "cachedResultName": "Conteúdo Casa Prado",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1XZ_q6cCyZBvV9BSR0Qy4bUC1K7M_0SDc"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "4dd4d5bf-bc74-4a52-9181-3009ebc31f42",
+      "name": "Arquivo Criado",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        460
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "dGjgEWa3csjmu6Wf",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1RW_JWUrMu08F1fWA-blJADmzd8Q7N7oL",
+          "mode": "list",
+          "cachedResultName": "Infos 4 Jon",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1RW_JWUrMu08F1fWA-blJADmzd8Q7N7oL"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "2689e122-6f9f-42a1-b0e8-8a988a407702",
+      "name": "Arquivo Atualizado",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        620
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "dGjgEWa3csjmu6Wf",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 🎯 Execute uma vez para Configurar as Tabelas do Banco de Dados",
+        "height": 300,
+        "width": 680,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1000,
+        900
+      ],
+      "typeVersion": 1,
+      "id": "113b2f35-1a9f-488c-84b7-ac7fa5c64af9",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Fluxo para Adicionar um Arquivo do Google Drive ao Banco de Dados Vetorial",
+        "height": 867,
+        "width": 2293,
+        "color": 2
+      },
+      "id": "086c6ec4-c8ca-45df-a130-4fd76fcf13fc",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 👉 O que é a Arquitetura RAG Tradicional?\nA Arquitetura RAG (Retrieval-Augmented Generation) Tradicional é uma técnica que combina modelos de linguagem (como o GPT) com mecanismos de busca em bases de dados para melhorar a geração de respostas.\n\nEla funciona em duas etapas principais:\n\nRecuperação (Retrieval): quando uma pergunta é feita, o sistema primeiro consulta uma base vetorial (com documentos ou dados embebidos como vetores) para encontrar os trechos mais relevantes.\n\nGeração (Generation): em seguida, o modelo de linguagem usa essas informações recuperadas como contexto para gerar uma resposta mais precisa e fundamentada.\n\nEssa arquitetura é especialmente útil para cenários onde o modelo precisa acessar informações externas ou atualizadas, como bases de conhecimento, FAQs, documentos empresariais ou manuais técnicos.\n\nApesar de eficaz, a versão tradicional não possui memória de longo prazo nem capacidade de agir de forma autônoma — ela responde de maneira pontual e reativa, sem aprender com interações anteriores.\n\n* Para testar a automação basta clicar no botão \"Open Chat\" no canto inferior central.",
+        "height": 500,
+        "width": 680,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1000,
+        -400
+      ],
+      "typeVersion": 1,
+      "id": "a8ab4dde-be08-4221-8a42-bbf3aa904f8c",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a9a245e-f1a1-4282-bb02-a81ffe629f0f",
+              "name": "chatInput",
+              "value": "={{ $json?.chatInput || $json.body.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "b80831d8-c653-4203-8706-adedfdb98f77",
+              "name": "sessionId",
+              "value": "=rag",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6a0e43bf-4950-41f8-ba75-309a3ceb47c3",
+      "name": "dados",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        200,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        180,
+        100
+      ],
+      "id": "a6a75e6b-8782-4a25-90b2-38d8fa336c2d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "1FmPMOoqEzqVaaqy",
+          "name": "ALIACODE"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Inserir no Vectorstore do Supabase",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set File ID": {
+      "main": [
+        [
+          {
+            "node": "Deletar Linhas Antigas do Documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Extrair Texto do PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extrair Texto do Documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clique para Criar": {
+      "main": [
+        [
+          {
+            "node": "Criar Tabela de Documentos e Função de Correspondência",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Tabela de Documentos e Função de Correspondência": {
+      "main": [
+        [
+          {
+            "node": "Criar Tabela de Metadados dos Documentos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Texto do PDF": {
+      "main": [
+        [
+          {
+            "node": "Inserir no Vectorstore do Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Texto do Documento": {
+      "main": [
+        [
+          {
+            "node": "Inserir no Vectorstore do Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Divisor de Texto por Caracteres": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Carregador de Dados Padrão",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Carregador de Dados Padrão": {
+      "ai_document": [
+        [
+          {
+            "node": "Inserir no Vectorstore do Supabase",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inserir no Vectorstore do Supabase": {
+      "main": [
+        [
+          {
+            "node": "Repetir sobre Itens (Loop)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inserir Metadados do Documento": {
+      "main": [
+        [
+          {
+            "node": "Download Arquivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deletar Linhas Antigas do Documento": {
+      "main": [
+        [
+          {
+            "node": "Inserir Metadados do Documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Repetir sobre Itens (Loop)": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Set File ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Arquivo": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Arquivo Criado": {
+      "main": [
+        [
+          {
+            "node": "Repetir sobre Itens (Loop)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Arquivo Atualizado": {
+      "main": [
+        [
+          {
+            "node": "Repetir sobre Itens (Loop)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "dados": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e1576e0d-43f9-4338-9abe-f805244d7552",
+  "meta": {
+    "instanceId": "25ef9a3ed4fc03d15a4387f32c0f8a5974fa6937ca794c863d327018ac46906c"
+  },
+  "id": "RAlD5Lyhq1wLAnHN",
+  "tags": [
+    {
+      "createdAt": "2025-04-08T02:35:57.344Z",
+      "updatedAt": "2025-04-08T02:35:57.344Z",
+      "id": "Pn2ZiG7dG6arZwxW",
+      "name": "TCC"
+    }
+  ]
+}
