@@ -1,4 +1,4 @@
-# UM RELATO DE EXPERIÊNCIA SOBRE O USO DA FERRAMENTA N8N NA CRIAÇÃO DE AUTOMAÇÕES COM INTELIGÊNCIA ARTIFICIAL PARA ATENDIMENTO AO CLIENTE
+# Um Relato de Experiência sobre o Uso da Ferramenta n8n na Criação de Automações com Inteligência Artificial para Atendimento ao Cliente
 
 Este repositório contém os fluxos de automação desenvolvidos no n8n para relatar a experiência de desenvolvimento nesta plataforma, com um foco em automações com inteligência artificial envolvendo agentes IA para realizar atendimento ao cliente. Foram implementadas três arquiteturas distintas utilizando o modelo GPT-4o mini:
 
